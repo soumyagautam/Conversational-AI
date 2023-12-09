@@ -1,7 +1,7 @@
 import google.generativeai as palm
 from flask import Flask, render_template, request
 
-API_KEY = "AIzaSyDo86wroTuF6ftwmdYO8jfSlEoVq9KW2Cc"
+API_KEY = "YOUR API KEY HERE"
 
 palm.configure(api_key=API_KEY)
 models = [str(model.name) for model in palm.list_models()]
