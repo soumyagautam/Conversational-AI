@@ -19,7 +19,7 @@ def hello_world():
 def submit():
     prompt = request.form["text"]
 
-    if prompt is "":
+    if prompt == "":
         return render_template("index.html", output="Please give some input")
 
     completion = palm.generate_text(
