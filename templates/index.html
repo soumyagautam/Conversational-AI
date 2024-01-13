@@ -8,21 +8,87 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
     <link rel="stylesheet" href="/static/css/styles.css">
-    <link rel="icon" href="/static/css/logo.png">
-    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script> 
+    <link rel="icon" href="/static/images/logo.png">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js" integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.min.js" integrity="sha384-BBtl+eGJRgqQAUMxJ7pMwbEyER4l1g+O15P+16Ep7Q9Q+zqX6gSbd85u4mG4QzX+" crossorigin="anonymous"></script>
 </head>
 <body>
     <center>
-        <h1>IntelliChat  <span class="badge bg-secondary">Beta</span></h1>
-        <form action="{{ url_for('submit') }}" method="post">
-            <textarea name="text" rows="10" cols="50" placeholder="Message here..."></textarea><br>
-            <input class="submit-btn" type="submit">
-            <p>{{ output }}</p>
-        </form>
+        <h1>IntelliChat   <span class="beta badge bg-secondary">Beta</span></h1>
+        <div>
+            <form action="{{ url_for('submit') }}" method="post">
+                <h2 class="resultHead">Result&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="font-size: 20px;">[{{ ques }}]</span></h2>
+                <p>{{ output }}</p>
+                <h4 class="resultHead">Summary & Google Results</h4>
+                <p> {{ summary }}<br><br>
+                    1. <a href="{{ google[0] }}" target="_blank">{{ google[0] }}</a><br>
+                    2. <a href="{{ google[1] }}" target="_blank">{{ google[1] }}</a><br>
+                    3. <a href="{{ google[2] }}" target="_blank">{{ google[2] }}</a><br>
+                    4. <a href="{{ google[3] }}" target="_blank">{{ google[3] }}</a><br>
+                    5. <a href="{{ google[4] }}" target="_blank">{{ google[4] }}</a><br>
+                </p>
+                <textarea class="form-control mb-7" id="transcription" name="text" rows="2" placeholder="Message here..."></textarea>
+                <a class="voice_btn" id="startRecording"><img src="./static/images/mic.png" height="30"></a>
+                <a class="voice_btn" id="stopRecording"><img src="./static/images/stop.png" height="30"></a>
+                <input class="submit" type="image" src="./static/images/verified.png" alt="Submit" width="48" height="48">
+            </form>
+        </div>
     </center>
+    <script>
+        let recognition;
+
+        const startRecordingButton = document.getElementById("startRecording");
+        const stopRecordingButton = document.getElementById("stopRecording");
+        const transcriptionTextarea = document.getElementById("transcription");
+
+        startRecordingButton.addEventListener("click", startRecording);
+        stopRecordingButton.addEventListener("click", stopRecording);
+
+        function startRecording() {
+          recognition = new webkitSpeechRecognition();
+          recognition.continuous = true;
+          recognition.interimResults = true;
+
+          recognition.onstart = () => {
+            console.log("Recording started");
+          };
+
+          recognition.onresult = (event) => {
+            let interimTranscript = "";
+            let finalTranscript = "";
+
+            for (let i = event.resultIndex; i < event.results.length; i++) {
+              const transcript = event.results[i][0].transcript;
+              if (event.results[i].isFinal) {
+                finalTranscript += transcript + " ";
+              } else {
+                interimTranscript += transcript;
+              }
+            }
+
+            transcriptionTextarea.value = finalTranscript;
+          };
+
+          recognition.onend = () => {
+            console.log("Recording stopped");
+            startRecordingButton.disabled = false;
+            stopRecordingButton.disabled = true;
+          };
+
+          recognition.start();
+
+          startRecordingButton.disabled = true;
+          stopRecordingButton.disabled = false;
+        }
+
+        function stopRecording() {
+          if (recognition) {
+            recognition.stop();
+          }
+        }
+    </script>
 </body>
 </html>
